@@ -185,11 +185,23 @@
   // Initialize Google Analytics
   [[GARawTracker sharedTracker] startWithTrackingID:@"UA-83409580-1"];
 #endif
+  
+  [self testGPG];
+  
 
   [[NSAppleEventManager sharedAppleEventManager] setEventHandler:self
                                                      andSelector:@selector(_getUrl:withReplyEvent:)
                                                    forEventClass:kInternetEventClass
                                                       andEventID:kAEGetURL];
+}
+
+- (void)testGPG{
+  NSError* error = nil;
+  GCRepository* repository = [[GCRepository alloc] initWithExistingLocalRepository:@"/tmp/testGit" error:&error];
+  GCConfigOption* signingKeyOption = [repository readConfigOptionForVariable:@"user.signingkey" error:&error];
+  GCConfigOption* gpgProgram = [repository readConfigOptionForVariable:@"gpg.program" error:&error];
+  GCConfigOption* shouldSign = [repository readConfigOptionForVariable:@"commit.gpgsign" error:&error];
+  
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification*)notification {

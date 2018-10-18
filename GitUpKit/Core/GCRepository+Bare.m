@@ -18,6 +18,7 @@
 #endif
 
 #import "GCPrivate.h"
+#import "GPGKeys.h"
 
 @implementation GCRepository (Bare)
 
@@ -25,7 +26,7 @@
   GCCommit* newCommit = nil;
   git_commit* parentCommit = NULL;
   git_tree* tree = NULL;
-
+  
   if (git_commit_parentcount(squashCommit.private) != 1) {
     GC_SET_GENERIC_ERROR(@"Commit to squash must have a single parent");
     goto cleanup;
@@ -367,15 +368,51 @@ cleanup:
   git_signature* signature = NULL;
 
   git_oid oid;
+  BOOL sign = true;
+  
   CALL_LIBGIT2_FUNCTION_GOTO(cleanup, git_signature_default, &signature, self.private);
-  CALL_LIBGIT2_FUNCTION_GOTO(cleanup, git_commit_create, &oid, self.private, NULL, author ? author : signature, signature, NULL, GCCleanedUpCommitMessage(message).bytes, tree, count, parents);
+  
+  git_buf commitBuffer = GIT_BUF_INIT_CONST("", 0);
+  if (sign) {
+//    git_buf_init(&commitBuffer, 1024);
+    
+    git_commit_create_buffer(&commitBuffer, self.private, author ? author : signature, signature, NULL, GCCleanedUpCommitMessage(message).bytes, tree, count, parents);
+    printf("\n\n\n%s\n\n\n", commitBuffer.ptr);
+    
+    
+    const char *gpgsig = [self gpgSig:commitBuffer.ptr];
+    
+    git_commit_create_with_signature(&oid, self.private, commitBuffer.ptr, gpgsig, NULL);
+    //  git_commit_create(<#git_oid *id#>, <#git_repository *repo#>, <#const char *update_ref#>, <#const git_signature *author#>, <#const git_signature *committer#>, <#const char *message_encoding#>, <#const char *message#>, <#const git_tree *tree#>, <#size_t parent_count#>, <#const git_commit **parents#>)
+  } else {
+    CALL_LIBGIT2_FUNCTION_GOTO(cleanup, git_commit_create, &oid, self.private, NULL, author ? author : signature, signature, NULL, GCCleanedUpCommitMessage(message).bytes, tree, count, parents);
+  }
+  
   git_commit* newCommit = NULL;
   CALL_LIBGIT2_FUNCTION_GOTO(cleanup, git_commit_lookup, &newCommit, self.private, &oid);
   commit = [[GCCommit alloc] initWithRepository:self commit:newCommit];
 
+cleanupsign:
+  git_buf_free(&commitBuffer);
+  
 cleanup:
   git_signature_free(signature);
   return commit;
+}
+
+-(const char*)gpgSig:(const char*)body {
+  GPGKeys* keysManager = [[GPGKeys alloc] init];
+  NSArray<GPGKey *>* privateKeys = [keysManager allSecretKeys];
+  NSLog(@"Private keys: %@", privateKeys);
+  
+  GPGKey* key = privateKeys.firstObject;
+  NSLog(@"Chosen key: %@", key);
+  
+  NSString* plainToSign = [[NSString alloc] initWithCString:body encoding:NSUTF8StringEncoding];
+
+  NSString* signature = [key sign:plainToSign clearSigners:YES];
+  
+  return [signature UTF8String];
 }
 
 - (GCCommit*)createCommitFromIndex:(git_index*)index
