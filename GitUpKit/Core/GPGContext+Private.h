@@ -10,7 +10,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface GPGContext()
-@property (nonatomic, assign) gpgme_ctx_t context;
+@property (nonatomic, assign) gpgme_ctx_t gpgContext;
 @end
 
 NS_ASSUME_NONNULL_END

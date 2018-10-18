@@ -1,197 +1,151 @@
-#import "GPGKeys.h"
+//  Copyright (C) 2015-2018 Pierre-Olivier Latour <info@pol-online.net>
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#import "GPGKeys.h"
+#import "GPGContext.h"
+#import "GPGContext+Private.h"
+#import "XLFacilityMacros.h"
 
 @interface GPGKey()
 @property (nonatomic, assign) gpgme_key_t key;
-@property (nonatomic, assign) gpgme_ctx_t gpgContext;
+@property (nonatomic, strong) GPGContext* gpgContext;
 @property (nonatomic, strong, nullable) NSString* name;
 @property (nonatomic, strong, nullable) NSString* email;
 @property (nonatomic, strong, nullable) NSString* keyId;
+@end
 
+@interface GPGKeys : NSObject
+-(instancetype)initWithContext:(GPGContext*)context;
+
+-(NSArray<GPGKey*>*)allSecretKeys;
 @end
 
 
 NSString* helperGpgDataToString(gpgme_data_t data) {
-    gpgme_data_seek(data, 0, SEEK_SET);
-    char buffer[1024] = {0};
-    ssize_t readCount = gpgme_data_read(data, buffer, 1024);
-    
-    NSData* readData = [[NSData alloc] initWithBytes:buffer length:readCount];
-    NSString* readString = [[NSString alloc] initWithData:readData encoding:NSUTF8StringEncoding];
-    
-    return readString;
+  gpgme_data_seek(data, 0, SEEK_SET);
+  char buffer[1024] = {0};
+  ssize_t readCount = gpgme_data_read(data, buffer, 1024);
+  
+  NSData* readData = [[NSData alloc] initWithBytes:buffer length:readCount];
+  NSString* readString = [[NSString alloc] initWithData:readData encoding:NSUTF8StringEncoding];
+  
+  return readString;
 }
 
 @implementation GPGKey
+static dispatch_once_t initializeThreadInfo;
 
-- (instancetype)initWithGPGKey:(gpgme_key_t)key context:(gpgme_ctx_t)gpgContext {
-    self = [super init];
-    if (self) {
-        self.key = key;
-        self.gpgContext = gpgContext;
-        
-        if (_key->uids) {
-            if (_key->uids->name) {
-                _name = [[NSString alloc] initWithCString:_key->uids->name
-                                                 encoding:NSUTF8StringEncoding];
-            }
-            if (_key->uids->email) {
-                _email = [[NSString alloc] initWithCString:_key->uids->email
-                                                  encoding:NSUTF8StringEncoding];
-            }
-        }
-        
-        if (_key->subkeys) {
-            if (_key->subkeys->keyid) {
-                _keyId = [[NSString alloc] initWithCString:_key->subkeys->keyid
-                                                  encoding:NSUTF8StringEncoding];
-            }
-        }
++(NSArray<GPGKey *> *)allSecretKeys {
+  dispatch_once(&initializeThreadInfo, ^{
+    gpgme_check_version(NULL);
+  });
+  
+  GPGContext* contextWrapper = [[GPGContext alloc] init];
+  gpg_error_t keylistStartError = gpgme_op_keylist_start(contextWrapper.gpgContext, NULL, 1);
+  
+  if (keylistStartError) {
+    XLOG_ERROR(@"Failed to start keylist: %s", gpg_strerror(keylistStartError));
+    return nil;
+  }
+  
+  NSMutableArray<GPGKey*> *keys = [NSMutableArray array];
+  gpg_error_t err = 0;
+  while (!err) {
+    gpgme_key_t key;
+    err = gpgme_op_keylist_next (contextWrapper.gpgContext, &key);
+    if (err) {
+      break;
     }
-    return self;
+    
+    GPGKey* gpgKey = [[GPGKey alloc] initWithGPGKey:key context:contextWrapper];
+    [keys addObject:gpgKey];
+  }
+  
+  if (gpg_err_code (err) != GPG_ERR_EOF) {
+    XLOG_ERROR(@"Cannot list keys: %s", gpg_strerror(err));
+    return nil;
+  }
+  
+  return [keys copy];
+}
+
+- (instancetype)initWithGPGKey:(gpgme_key_t)key context:(GPGContext*)context {
+  self = [super init];
+  if (self) {
+    // retain key on initializer, release on object dealloc.
+    gpgme_key_ref(key);
+    self.key = key;
+    self.gpgContext = context;
+    
+    if (_key->uids) {
+      if (_key->uids->name) {
+        _name = [[NSString alloc] initWithCString:_key->uids->name
+                                         encoding:NSUTF8StringEncoding];
+      }
+      if (_key->uids->email) {
+        _email = [[NSString alloc] initWithCString:_key->uids->email
+                                          encoding:NSUTF8StringEncoding];
+      }
+    }
+    
+    if (_key->subkeys) {
+      if (_key->subkeys->keyid) {
+        _keyId = [[NSString alloc] initWithCString:_key->subkeys->keyid
+                                          encoding:NSUTF8StringEncoding];
+      }
+    }
+  }
+  return self;
 }
 
 -(NSString *)description {
-    return [NSString stringWithFormat:@"<%@: %p 'keyId: %@' 'email: %@' 'name: %@'>", self.class, self, self.keyId, self.email, self.name];
+  return [NSString stringWithFormat:@"<%@: %p 'keyId: %@' 'email: %@' 'name: %@'>", self.class, self, self.keyId, self.email, self.name];
 }
 
 -(void)dealloc {
-    gpgme_key_unref(_key);
+  gpgme_key_unref(_key);
 }
 
--(NSString*)sign:(NSString*)document clearSigners:(BOOL)clearSigners {
-    if (clearSigners) {
-        gpgme_signers_clear(_gpgContext);
-    }
-    gpgme_signers_add(_gpgContext, _key);
-    
-    gpgme_data_t in, out;
-    gpgme_data_new(&out);
-    
-    const char* s = [document UTF8String];
-    NSUInteger count = document.length;
-    gpgme_error_t err = gpgme_data_new_from_mem(&in, s, count, 0);
-    if (err) {
-        printf("%s\n", gpg_strerror(err));
-    }
-    
-    gpgme_set_textmode(_gpgContext, 0);
-    gpgme_set_armor(_gpgContext, 1);
-    
-    err = gpgme_op_sign(_gpgContext, in, out, GPGME_SIG_MODE_DETACH);
-    if (err) {
-        printf("%s\n", gpg_strerror(err));
-    }
-    
-    NSString* signatureString = helperGpgDataToString(out);
-    
-    return signatureString;
-}
-
-@end
-
-
-
-@interface GPGKeys ()
-@property (nonatomic, assign, nonnull) gpgme_ctx_t gpgContext;
-@property (nonatomic, assign) BOOL shouldReleaseContext;
-@end
-
-@implementation GPGKeys
-
-+(void)initialize {
-    gpgme_check_version(NULL);
-}
-
-- (instancetype)init {
-    self = [super init];
-    if (self) {
-        gpgme_error_t initError = gpgme_new(&_gpgContext);
-        _shouldReleaseContext = YES;
-        if (initError) {
-            printf("Error during initialization: %s", gpgme_strerror(initError));
-            return nil;
-        }
-    }
-    return self;
-}
-
-- (instancetype)initWithContext:(gpgme_ctx_t)context {
-    self = [super init];
-    if (self) {
-        self.gpgContext = context;
-        _shouldReleaseContext = NO;
-    }
-    return self;
-}
-
--(NSArray<GPGKey *> *)allSecretKeys {
-    gpgme_key_t key;
-    gpg_error_t err = gpgme_op_keylist_start (_gpgContext, NULL, 1);
-    
-    NSMutableArray<GPGKey*> *keys = [NSMutableArray array];
-    while (!err)
-    {
-        err = gpgme_op_keylist_next (_gpgContext, &key);
-        if (err)
-            break;
-//        printf ("%s:", key->subkeys->keyid);
-//        if (key->uids && key->uids->name)
-//            printf (" %s", key->uids->name);
-//        if (key->uids && key->uids->email)
-//            printf (" <%s>", key->uids->email);
-        
-        GPGKey* gpgKey = [[GPGKey alloc] initWithGPGKey:key context:_gpgContext];
-        [keys addObject:gpgKey];
-        putchar ('\n');
-    }
-    
-    if (gpg_err_code (err) != GPG_ERR_EOF)
-    {
-        fprintf (stderr, "can not list keys: %s\n", gpgme_strerror (err));
-        exit (1);
-    }
-    
-    return [keys copy];
-}
-
--(void)dealloc {
-    if (_shouldReleaseContext) {
-        gpgme_release(_gpgContext);
-    }
+-(NSString*)signSignature:(NSString*)document {
+  gpgme_signers_clear(_gpgContext.gpgContext);
+  gpgme_signers_add(_gpgContext.gpgContext, _key);
+  
+  gpgme_data_t in, out;
+  gpgme_data_new(&out);
+  
+  gpgme_error_t err = gpgme_data_new_from_mem(&in, [document UTF8String], document.length, 1);
+  if (err) {
+    XLOG_ERROR(@"Failed to initialize input data: %s", gpg_strerror(err));
+    return nil;
+  }
+  
+  gpgme_set_textmode(_gpgContext.gpgContext, 0);
+  gpgme_set_armor(_gpgContext.gpgContext, 1);
+  
+  err = gpgme_op_sign(_gpgContext.gpgContext, in, out, GPGME_SIG_MODE_DETACH);
+  if (err) {
+    XLOG_ERROR(@"Signing failed due: %s", gpg_strerror(err));
+    return nil;
+  }
+  
+  NSString* signatureString = helperGpgDataToString(out);
+  
+  gpgme_data_release(in);
+  gpgme_data_release(out);
+  
+  return signatureString;
 }
 
 @end
-
-
-
-void listPrivateKeys() {
-    gpgme_ctx_t ctx;
-    gpgme_key_t key;
-    gpgme_error_t err = gpgme_new (&ctx);
-    
-    if (!err)
-    {
-        err = gpgme_op_keylist_start (ctx, NULL, 1);
-        while (!err)
-        {
-            err = gpgme_op_keylist_next (ctx, &key);
-            if (err)
-                break;
-            printf ("%s:", key->subkeys->keyid);
-            if (key->uids && key->uids->name)
-                printf (" %s", key->uids->name);
-            if (key->uids && key->uids->email)
-                printf (" <%s>", key->uids->email);
-            putchar ('\n');
-            gpgme_key_release (key);
-        }
-        gpgme_release (ctx);
-    }
-    if (gpg_err_code (err) != GPG_ERR_EOF)
-    {
-        fprintf (stderr, "can not list keys: %s\n", gpgme_strerror (err));
-        exit (1);
-    }
-    
-}

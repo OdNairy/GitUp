@@ -8,16 +8,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly) NSString* name;
 @property (readonly) NSString* keyId;
 
--(NSString*)sign:(NSString*)document clearSigners:(BOOL)clearSigners;
++(NSArray<GPGKey *> *)allSecretKeys;
+
+-(NSString*)signSignature:(NSString*)document;
 
 @end
-
-@interface GPGKeys : NSObject
--(instancetype)initWithContext:(gpgme_ctx_t)context;
-
--(NSArray<GPGKey*>*)allSecretKeys;
-@end
-
-
 
 NS_ASSUME_NONNULL_END
