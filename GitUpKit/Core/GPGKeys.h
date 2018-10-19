@@ -9,6 +9,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly) NSString* keyId;
 
 +(NSArray<GPGKey *> *)allSecretKeys;
++(nullable instancetype)secretKeyForId:(NSString*)keyId;
 
 -(NSString*)signSignature:(NSString*)document;
 

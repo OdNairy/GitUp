@@ -81,6 +81,18 @@ static dispatch_once_t initializeThreadInfo;
   return [keys copy];
 }
 
++(instancetype)secretKeyForId:(NSString *)keyId {
+  NSArray<GPGKey *>* allKeys = [self allSecretKeys];
+  NSUInteger indexOfKey = [allKeys indexOfObjectPassingTest:^BOOL(GPGKey * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    return [obj.keyId isEqualToString:keyId];
+  }];
+  
+  if (indexOfKey == NSNotFound) {
+    return nil;
+  }
+  return allKeys[indexOfKey];
+}
+
 - (instancetype)initWithGPGKey:(gpgme_key_t)key context:(GPGContext*)context {
   self = [super init];
   if (self) {
