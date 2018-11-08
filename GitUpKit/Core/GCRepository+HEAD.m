@@ -116,7 +116,8 @@
   }
 
   const git_commit* parents[2] = {headCommit, parent.private};
-  commit = [self createCommitFromIndex:index withParents:parents count:(headCommit ? (parent ? 2 : 1) : 0)author:NULL message:message error:error];
+  BOOL shouldSign = YES;
+  commit = [self createCommitFromIndex:index withParents:parents count:(headCommit ? (parent ? 2 : 1) : 0)author:NULL message:message shouldSign:shouldSign error:error];
   if (commit == nil) {
     goto cleanup;
   }

@@ -283,6 +283,7 @@ extern int git_submodule_foreach_block(git_repository* repo, int (^block)(git_su
                             count:(NSUInteger)count
                            author:(const git_signature*)author
                           message:(NSString*)message
+                       shouldSign:(BOOL)shouldSign
                             error:(NSError**)error;
 
 - (GCCommit*)createCommitFromIndex:(git_index*)index
@@ -290,6 +291,7 @@ extern int git_submodule_foreach_block(git_repository* repo, int (^block)(git_su
                              count:(NSUInteger)count
                             author:(const git_signature*)author
                            message:(NSString*)message
+                        shouldSign:(BOOL)shouldSign
                              error:(NSError**)error;
 
 - (GCCommit*)createCommitFromCommit:(git_commit*)commit

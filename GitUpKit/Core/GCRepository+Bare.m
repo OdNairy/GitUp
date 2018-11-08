@@ -79,7 +79,9 @@ static inline GCCommit* _CopyCommit(GCRepository* repository, git_commit* commit
     commit = handler([[GCIndex alloc] initWithRepository:nil index:index], _CopyCommit(self, ourCommit), _CopyCommit(self, theirCommit), array, message, error);  // Doesn't make sense to specify a custom author on conflict anyway
     index = NULL;  // Ownership has been transferred to GCIndex instance
   } else {
-    commit = [self createCommitFromIndex:index withParents:parents count:count author:author message:message error:error];
+
+    BOOL shouldSign = YES;
+    commit = [self createCommitFromIndex:index withParents:parents count:count author:author message:message shouldSign:shouldSign error:error];
   }
 
 cleanup:
@@ -206,6 +208,7 @@ cleanup:
 - (GCCommit*)createCommitFromIndex:(GCIndex*)index
                        withParents:(NSArray*)parents
                            message:(NSString*)message
+                        shouldSign:(BOOL)shouldSign
                              error:(NSError**)error {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wvla"
@@ -215,7 +218,7 @@ cleanup:
   for (GCCommit* parent in parents) {
     commits[count++] = parent.private;
   }
-  return [self createCommitFromIndex:index.private withParents:commits count:count author:NULL message:message error:error];
+  return [self createCommitFromIndex:index.private withParents:commits count:count author:NULL message:message shouldSign:shouldSign error:error];
 }
 
 - (GCCommit*)copyCommit:(GCCommit*)copyCommit
@@ -363,19 +366,22 @@ cleanup:
                             count:(NSUInteger)count
                            author:(const git_signature*)author
                           message:(NSString*)message
+                       shouldSign:(BOOL)shouldSign
                             error:(NSError**)error {
   GCCommit* commit = nil;
   git_signature* signature = NULL;
 
   git_oid oid;
-  BOOL sign = NO;
   
+  GCConfigOption* shouldSignOption = [self readConfigOptionForVariable:@"commit.gpgsign" error:nil];
   CALL_LIBGIT2_FUNCTION_GOTO(cleanup, git_signature_default, &signature, self.private);
   
   git_buf commitBuffer = GIT_BUF_INIT_CONST("", 0);
-  if (sign) {
+  if ([shouldSignOption.value isEqualToString:@"true"]) {
+    GCConfigOption* signingKeyOption = [self readConfigOptionForVariable:@"user.signingkey" error:nil];
+    
     CALL_LIBGIT2_FUNCTION_GOTO(cleanupBuffer, git_commit_create_buffer, &commitBuffer, self.private, author ? author : signature, signature, NULL, GCCleanedUpCommitMessage(message).bytes, tree, count, parents);
-    const char *gpgSignature = [self gpgSig:commitBuffer.ptr];
+    const char *gpgSignature = [self gpgSig:commitBuffer.ptr keyId:signingKeyOption.value];
     CALL_LIBGIT2_FUNCTION_GOTO(cleanupBuffer, git_commit_create_with_signature, &oid, self.private, commitBuffer.ptr, gpgSignature, NULL);
   } else {
     CALL_LIBGIT2_FUNCTION_GOTO(cleanupBuffer, git_commit_create, &oid, self.private, NULL, author ? author : signature, signature, NULL, GCCleanedUpCommitMessage(message).bytes, tree, count, parents);
@@ -393,9 +399,18 @@ cleanup:
   return commit;
 }
 
--(const char*)gpgSig:(const char*)body {
-  NSArray<GPGKey *>* privateKeys = [GPGKey allSecretKeys];
-  GPGKey* key = privateKeys.firstObject;
+-(const char*)gpgSig:(const char*)body keyId:(NSString*)keyId {
+  GPGKey *key = nil;
+  if (keyId.length > 0) {
+    key = [GPGKey secretKeyForId:keyId];
+  }
+  if (key == nil) {
+    key = [[GPGKey allSecretKeys] firstObject];
+  }
+  if (key == nil) {
+    return NULL;
+  }
+
   NSString* plainToSign = [[NSString alloc] initWithCString:body encoding:NSUTF8StringEncoding];
   NSString* signature = [key signSignature:plainToSign];
   
@@ -407,6 +422,7 @@ cleanup:
                              count:(NSUInteger)count
                             author:(const git_signature*)author
                            message:(NSString*)message
+                        shouldSign:(BOOL)shouldSign
                              error:(NSError**)error {
   GCCommit* commit = nil;
   git_tree* tree = NULL;
@@ -415,7 +431,7 @@ cleanup:
   CALL_LIBGIT2_FUNCTION_GOTO(cleanup, git_index_write_tree_to, &oid, index, self.private);
   CALL_LIBGIT2_FUNCTION_GOTO(cleanup, git_tree_lookup, &tree, self.private, &oid);
 
-  commit = [self createCommitFromTree:tree withParents:parents count:count author:author message:message error:error];
+  commit = [self createCommitFromTree:tree withParents:parents count:count author:author message:message shouldSign:shouldSign error:error];
 
 cleanup:
   git_tree_free(tree);
