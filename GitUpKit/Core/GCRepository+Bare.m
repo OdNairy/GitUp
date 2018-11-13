@@ -377,11 +377,15 @@ cleanup:
   CALL_LIBGIT2_FUNCTION_GOTO(cleanup, git_signature_default, &signature, self.private);
   
   git_buf commitBuffer = GIT_BUF_INIT_CONST("", 0);
+  const char *gpgSignature = NULL;
   if ([shouldSignOption.value isEqualToString:@"true"]) {
     GCConfigOption* signingKeyOption = [self readConfigOptionForVariable:@"user.signingkey" error:nil];
     
     CALL_LIBGIT2_FUNCTION_GOTO(cleanupBuffer, git_commit_create_buffer, &commitBuffer, self.private, author ? author : signature, signature, NULL, GCCleanedUpCommitMessage(message).bytes, tree, count, parents);
-    const char *gpgSignature = [self gpgSig:commitBuffer.ptr keyId:signingKeyOption.value];
+    gpgSignature = [self gpgSig:commitBuffer.ptr keyId:signingKeyOption.value];
+  }
+  
+  if (gpgSignature != NULL) {
     CALL_LIBGIT2_FUNCTION_GOTO(cleanupBuffer, git_commit_create_with_signature, &oid, self.private, commitBuffer.ptr, gpgSignature, NULL);
   } else {
     CALL_LIBGIT2_FUNCTION_GOTO(cleanupBuffer, git_commit_create, &oid, self.private, NULL, author ? author : signature, signature, NULL, GCCleanedUpCommitMessage(message).bytes, tree, count, parents);
