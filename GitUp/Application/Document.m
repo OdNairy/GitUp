@@ -14,9 +14,9 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #import "Document.h"
-#import "WindowController.h"
 #import "Common.h"
 #import "AppDelegate.h"
+#import "GitUp-Swift.h"
 
 #import <GitUpKit/XLFacilityMacros.h>
 

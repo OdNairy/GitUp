@@ -23,11 +23,11 @@
 #import <GitUpKit/XLFacilityMacros.h>
 
 #import "AppDelegate.h"
-#import "DocumentController.h"
 #import "Document.h"
 #import "Common.h"
 #import "ToolProtocol.h"
 #import "GARawTracker.h"
+#import "GitUp-Swift.h"
 
 #define __ENABLE_SUDDEN_TERMINATION__ 1
 
