@@ -50,7 +50,7 @@ typedef NS_ENUM(NSUInteger, GCSubmoduleUpdateMode) {
 - (instancetype)initWithSubmodule:(GCSubmodule*)submodule error:(NSError**)error;  // (?)
 
 - (BOOL)checkSubmoduleInitialized:(GCSubmodule*)submodule error:(NSError**)error;  // (?)
-- (BOOL)checkAllSubmodulesInitialized:(BOOL)recursive error:(NSError**)error;  // (?)
+- (BOOL)checkAllSubmodulesInitialized:(BOOL)recursive error:(NSError**)error NS_SWIFT_NOTHROW;  // (?)
 
 - (GCSubmodule*)addSubmoduleWithURL:(NSURL*)url atPath:(NSString*)path recursive:(BOOL)recursive error:(NSError**)error;  // git submodule add {url} {path}
 - (BOOL)initializeSubmodule:(GCSubmodule*)submodule recursive:(BOOL)recursive error:(NSError**)error;  // git submodule update --init {--recursive} {path}
