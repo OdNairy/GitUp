@@ -16,15 +16,15 @@
 #import <AppKit/AppKit.h>
 
 typedef NS_ENUM(NSUInteger, CloneMode) {
-  kCloneMode_None = 0,
-  kCloneMode_Default,
-  kCloneMode_Recursive
+    kCloneMode_None = 0,
+    kCloneMode_Default,
+    kCloneMode_Recursive
 };
 
 typedef NS_ENUM(NSUInteger, WindowModeID) {
-  kWindowModeID_Map = 0,
-  kWindowModeID_Commit,
-  kWindowModeID_Stashes
+    kWindowModeID_Map = 0,
+    kWindowModeID_Commit,
+    kWindowModeID_Stashes
 };
 
 @interface Document : NSDocument <NSUserInterfaceValidations>

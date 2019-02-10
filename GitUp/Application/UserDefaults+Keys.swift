@@ -1,4 +1,4 @@
-//  Copyright (C) 2018 Rob Mayoff <gitup@rob.dqd.com>.
+//  Copyright (C) 2015-2018 Pierre-Olivier Latour <info@pol-online.net>
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -13,8 +13,20 @@
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#import <AppKit/AppKit.h>
+extension UserDefaults {
+    var diffWhitespaceMode: GCLiveRepositoryDiffWhitespaceMode {
+        get {
+            return GCLiveRepositoryDiffWhitespaceMode(rawValue: UInt(integer(forKey: kUserDefaultsKey_DiffWhitespaceMode)))!
+        }
+        set {
+            set(Int(newValue.rawValue), forKey: kUserDefaultsKey_DiffWhitespaceMode)
+        }
+    }
 
-@interface ToolbarItemWrapperView : NSView
+    var checkInterval: Double {
+        return double(forKey: kUserDefaultsKey_CheckInterval)
+    }
+}
 
-@end
+
+
