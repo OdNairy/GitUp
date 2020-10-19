@@ -387,6 +387,10 @@ cleanup:
   
   if (gpgSignature != NULL) {
     CALL_LIBGIT2_FUNCTION_GOTO(cleanupBuffer, git_commit_create_with_signature, &oid, self.private, commitBuffer.ptr, gpgSignature, NULL);
+    
+    git_commit* signed_commit = nil;
+    git_commit_lookup(&signed_commit, self.private, &oid);
+    printf("!");
   } else {
     CALL_LIBGIT2_FUNCTION_GOTO(cleanupBuffer, git_commit_create, &oid, self.private, NULL, author ? author : signature, signature, NULL, GCCleanedUpCommitMessage(message).bytes, tree, count, parents);
   }
@@ -458,6 +462,14 @@ static const git_oid* _CommitParentCallback_Commit(size_t idx, void* payload) {
   return NULL;
 }
 
+static int (_SignCommitCallback)(git_buf *signature, git_buf *signature_field, const char *commit_content, void *payload) {
+  // Cannot implement such signing callback
+  // Reason: We need access to self for gpg signing method, key, configs and repo information.
+  
+  
+  return GIT_OK;
+}
+
 - (GCCommit*)createCommitFromCommit:(git_commit*)commit
                           withIndex:(git_index*)index
                      updatedMessage:(NSString*)message
@@ -483,14 +495,38 @@ static const git_oid* _CommitParentCallback_Commit(size_t idx, void* payload) {
   git_signature* signature = NULL;
   git_oid oid;
 
+  GCConfigOption* shouldSignOption = [self readConfigOptionForVariable:@"commit.gpgsign" error:nil];
+  
   if (updateCommitter) {
     CALL_LIBGIT2_FUNCTION_GOTO(cleanup, git_signature_default, &signature, self.private);
   }
 
-  CALL_LIBGIT2_FUNCTION_GOTO(cleanup, git_commit_create_from_callback, &oid, self.private, NULL,
+  git_buf commitBuffer = GIT_BUF_INIT_CONST("", 0);
+  CALL_LIBGIT2_FUNCTION_GOTO(cleanup, git_commit_create_buffer_for_signature, &commitBuffer, &oid, self.private, NULL,
                              git_commit_author(commit),
                              updateCommitter ? signature : git_commit_committer(commit),
-                             message ? NULL : git_commit_message_encoding(commit), message ? GCCleanedUpCommitMessage(message).bytes : git_commit_message(commit),
+                             message ? NULL : git_commit_message_encoding(commit),
+                             message ? GCCleanedUpCommitMessage(message).bytes : git_commit_message(commit),
+                             git_tree_id(tree),
+                             parents ? _CommitParentCallback_Parents : _CommitParentCallback_Commit, parents ? (__bridge void*)parents : (void*)commit,
+                             true);
+  
+  const char *gpgSignature = NULL;
+  if ([shouldSignOption.value isEqualToString:@"true"]) {
+    GCConfigOption* signingKeyOption = [self readConfigOptionForVariable:@"user.signingkey" error:nil];
+    
+    gpgSignature = [self gpgSig:commitBuffer.ptr keyId:signingKeyOption.value];
+  }
+  
+  printf("signature?");
+  
+  
+  CALL_LIBGIT2_FUNCTION_GOTO(cleanup, git_commit_create_with_signature_from_callback, &oid, self.private, NULL,
+                             git_commit_author(commit),
+                             updateCommitter ? signature : git_commit_committer(commit),
+                             message ? NULL : git_commit_message_encoding(commit),
+                             message ? GCCleanedUpCommitMessage(message).bytes : git_commit_message(commit),
+                             gpgSignature,
                              git_tree_id(tree),
                              parents ? _CommitParentCallback_Parents : _CommitParentCallback_Commit, parents ? (__bridge void*)parents : (void*)commit);
   CALL_LIBGIT2_FUNCTION_GOTO(cleanup, git_commit_lookup, &newCommit, self.private, &oid);
@@ -502,3 +538,5 @@ cleanup:
 }
 
 @end
+
+

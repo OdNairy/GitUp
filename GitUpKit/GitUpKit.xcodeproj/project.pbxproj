@@ -1892,6 +1892,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 				);
+				GCC_OPTIMIZATION_LEVEL = s;
 				HEADER_SEARCH_PATHS = (
 					"Third-Party/libgit2/include",
 					"Third-Party/libsqlite3/$(PLATFORM_NAME)/include",
