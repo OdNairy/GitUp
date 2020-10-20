@@ -381,7 +381,14 @@ cleanup:
   if ([shouldSignOption.value isEqualToString:@"true"]) {
     GCConfigOption* signingKeyOption = [self readConfigOptionForVariable:@"user.signingkey" error:nil];
     
-    CALL_LIBGIT2_FUNCTION_GOTO(cleanupBuffer, git_commit_create_buffer, &commitBuffer, self.private, author ? author : signature, signature, NULL, GCCleanedUpCommitMessage(message).bytes, tree, count, parents);
+    /*
+     Almost the best case: We can prototype buffer content, calculate gpg signature and call original `git_commit_create_with_signature`.
+     We have to create buffer first because we cannot trigger gpg calculation from the libgit2.
+     
+     Alternatively, it's still possible to reuse commit buffer if we will implement custom method to support rest implementation of 'git_commit_create_with_signature'
+     */
+    
+    CALL_LIBGIT2_FUNCTION_GOTO(cleanupBuffer, git_commit_create_buffer, &commitBuffer, self.private, author ? author : signature, signature, NULL, GCCleanedUpCommitMessage(message).bytes, NULL, tree, count, parents);
     gpgSignature = [self gpgSig:commitBuffer.ptr keyId:signingKeyOption.value];
   }
   
@@ -392,7 +399,7 @@ cleanup:
     git_commit_lookup(&signed_commit, self.private, &oid);
     printf("!");
   } else {
-    CALL_LIBGIT2_FUNCTION_GOTO(cleanupBuffer, git_commit_create, &oid, self.private, NULL, author ? author : signature, signature, NULL, GCCleanedUpCommitMessage(message).bytes, tree, count, parents);
+    CALL_LIBGIT2_FUNCTION_GOTO(cleanupBuffer, git_commit_create, &oid, self.private, NULL, author ? author : signature, signature, NULL, GCCleanedUpCommitMessage(message).bytes, NULL, tree, count, parents);
   }
   
   git_commit* newCommit = NULL;
@@ -521,7 +528,7 @@ static int (_SignCommitCallback)(git_buf *signature, git_buf *signature_field, c
   printf("signature?");
   
   
-  CALL_LIBGIT2_FUNCTION_GOTO(cleanup, git_commit_create_with_signature_from_callback, &oid, self.private, NULL,
+  CALL_LIBGIT2_FUNCTION_GOTO(cleanup, git_commit_create_from_callback, &oid, self.private, NULL,
                              git_commit_author(commit),
                              updateCommitter ? signature : git_commit_committer(commit),
                              message ? NULL : git_commit_message_encoding(commit),
