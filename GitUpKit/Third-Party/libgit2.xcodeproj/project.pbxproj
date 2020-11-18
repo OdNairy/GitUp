@@ -325,7 +325,7 @@
 		E2174F461B912B6B00BE234A /* cherrypick.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cherrypick.c; sourceTree = "<group>"; };
 		E2174F471B912B6B00BE234A /* clone.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = clone.c; sourceTree = "<group>"; };
 		E2174F481B912B6B00BE234A /* clone.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = clone.h; sourceTree = "<group>"; };
-		E2174F491B912B6B00BE234A /* commit.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = commit.c; sourceTree = "<group>"; };
+		E2174F491B912B6B00BE234A /* commit.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = commit.c; sourceTree = "<group>"; usesTabs = 1; };
 		E2174F4A1B912B6B00BE234A /* commit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = commit.h; sourceTree = "<group>"; };
 		E2174F4B1B912B6B00BE234A /* commit_list.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = commit_list.c; sourceTree = "<group>"; };
 		E2174F4C1B912B6B00BE234A /* commit_list.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = commit_list.h; sourceTree = "<group>"; };

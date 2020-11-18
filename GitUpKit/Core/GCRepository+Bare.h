@@ -66,6 +66,7 @@ typedef GCCommit* (^GCConflictHandler)(GCIndex* index, GCCommit* ourCommit, GCCo
 - (GCCommit*)createCommitFromIndex:(GCIndex*)index
                        withParents:(NSArray*)parents
                            message:(NSString*)message
+                        shouldSign:(BOOL)shouldSign
                              error:(NSError**)error;
 
 - (GCCommit*)copyCommit:(GCCommit*)copyCommit

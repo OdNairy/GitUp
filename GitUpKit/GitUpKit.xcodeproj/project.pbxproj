@@ -386,6 +386,24 @@
 		E2FEED491AEAA6B500CBED80 /* GCCommitDatabase-Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = E2FEED481AEAA6B500CBED80 /* GCCommitDatabase-Tests.m */; };
 		E2FEED4A1AEAA75F00CBED80 /* GCCommitDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = E2FEED451AEAA6AD00CBED80 /* GCCommitDatabase.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		E2FEED6C1AEF7B8300CBED80 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E2B14B561A88102C00003E64 /* Security.framework */; };
+		E69C1DFF217867DB0080117C /* GPGKeys.h in Headers */ = {isa = PBXBuildFile; fileRef = E69C1DFD217867DA0080117C /* GPGKeys.h */; };
+		E69C1E00217867DB0080117C /* GPGKeys.h in Headers */ = {isa = PBXBuildFile; fileRef = E69C1DFD217867DA0080117C /* GPGKeys.h */; };
+		E69C1E01217867DB0080117C /* GPGKeys.m in Sources */ = {isa = PBXBuildFile; fileRef = E69C1DFE217867DA0080117C /* GPGKeys.m */; };
+		E69C1E02217867DB0080117C /* GPGKeys.m in Sources */ = {isa = PBXBuildFile; fileRef = E69C1DFE217867DA0080117C /* GPGKeys.m */; };
+		E69C1E07217868160080117C /* libassuan.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E69C1E04217868160080117C /* libassuan.a */; };
+		E69C1E08217868160080117C /* libgpgme.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E69C1E05217868160080117C /* libgpgme.a */; };
+		E69C1E09217868160080117C /* libgpg-error.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E69C1E06217868160080117C /* libgpg-error.a */; };
+		E69C1E0C217893580080117C /* GPGContext.h in Headers */ = {isa = PBXBuildFile; fileRef = E69C1E0A217893580080117C /* GPGContext.h */; };
+		E69C1E0D217893580080117C /* GPGContext.h in Headers */ = {isa = PBXBuildFile; fileRef = E69C1E0A217893580080117C /* GPGContext.h */; };
+		E69C1E0E217893580080117C /* GPGContext.m in Sources */ = {isa = PBXBuildFile; fileRef = E69C1E0B217893580080117C /* GPGContext.m */; };
+		E69C1E0F217893580080117C /* GPGContext.m in Sources */ = {isa = PBXBuildFile; fileRef = E69C1E0B217893580080117C /* GPGContext.m */; };
+		E69C1E11217894AE0080117C /* GPGContext+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = E69C1E10217894AE0080117C /* GPGContext+Private.h */; };
+		E69C1E12217894AE0080117C /* GPGContext+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = E69C1E10217894AE0080117C /* GPGContext+Private.h */; };
+		E69C1E132178AC3E0080117C /* GPGKeys.m in Sources */ = {isa = PBXBuildFile; fileRef = E69C1DFE217867DA0080117C /* GPGKeys.m */; };
+		E69C1E142178AC400080117C /* GPGContext.m in Sources */ = {isa = PBXBuildFile; fileRef = E69C1E0B217893580080117C /* GPGContext.m */; };
+		E69C1E152178AC690080117C /* libassuan.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E69C1E04217868160080117C /* libassuan.a */; };
+		E69C1E162178AC690080117C /* libgpg-error.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E69C1E06217868160080117C /* libgpg-error.a */; };
+		E69C1E172178AC690080117C /* libgpgme.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E69C1E05217868160080117C /* libgpgme.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -663,6 +681,14 @@
 		E2FEED441AEAA6AD00CBED80 /* GCCommitDatabase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCCommitDatabase.h; sourceTree = "<group>"; };
 		E2FEED451AEAA6AD00CBED80 /* GCCommitDatabase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCCommitDatabase.m; sourceTree = "<group>"; };
 		E2FEED481AEAA6B500CBED80 /* GCCommitDatabase-Tests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GCCommitDatabase-Tests.m"; sourceTree = "<group>"; };
+		E69C1DFD217867DA0080117C /* GPGKeys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPGKeys.h; sourceTree = "<group>"; };
+		E69C1DFE217867DA0080117C /* GPGKeys.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPGKeys.m; sourceTree = "<group>"; };
+		E69C1E04217868160080117C /* libassuan.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libassuan.a; path = "Third-Party/libgpgme/MacOSX/lib/libassuan.a"; sourceTree = "<group>"; };
+		E69C1E05217868160080117C /* libgpgme.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libgpgme.a; path = "Third-Party/libgpgme/MacOSX/lib/libgpgme.a"; sourceTree = "<group>"; };
+		E69C1E06217868160080117C /* libgpg-error.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libgpg-error.a"; path = "Third-Party/libgpgme/MacOSX/lib/libgpg-error.a"; sourceTree = "<group>"; };
+		E69C1E0A217893580080117C /* GPGContext.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GPGContext.h; sourceTree = "<group>"; };
+		E69C1E0B217893580080117C /* GPGContext.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GPGContext.m; sourceTree = "<group>"; };
+		E69C1E10217894AE0080117C /* GPGContext+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "GPGContext+Private.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -683,6 +709,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E69C1E07217868160080117C /* libassuan.a in Frameworks */,
+				E69C1E08217868160080117C /* libgpgme.a in Frameworks */,
+				E69C1E09217868160080117C /* libgpg-error.a in Frameworks */,
 				E21752FF1B914F5E00BE234A /* libgit2.a in Frameworks */,
 				E267E1FB1B84DA7600BAB377 /* Cocoa.framework in Frameworks */,
 				E267E2301B84DC0900BAB377 /* QuartzCore.framework in Frameworks */,
@@ -696,6 +725,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E69C1E152178AC690080117C /* libassuan.a in Frameworks */,
+				E69C1E162178AC690080117C /* libgpg-error.a in Frameworks */,
+				E69C1E172178AC690080117C /* libgpgme.a in Frameworks */,
 				E21753091B91516600BE234A /* libgit2.a in Frameworks */,
 				E2C338D919F85C3400063D95 /* Foundation.framework in Frameworks */,
 				E28200AE1A7D720000DA4096 /* CoreServices.framework in Frameworks */,
@@ -912,6 +944,7 @@
 				E20A52341A80D1BF003546C3 /* Framework and Libraries */,
 				E27E374E1B86F5D1000A551A /* Xcode-Configurations */,
 				E2C338AC19F8562F00063D95 /* Products */,
+				E69C1E03217868160080117C /* Frameworks */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -979,6 +1012,11 @@
 				E2C3AA5919FF0B0600BA89F3 /* GCRepository+Bare.h */,
 				E2C3AA5A19FF0B0600BA89F3 /* GCRepository+Bare.m */,
 				E24509021A9A50F3003E602D /* GCRepository+Config-Tests.m */,
+				E69C1DFD217867DA0080117C /* GPGKeys.h */,
+				E69C1DFE217867DA0080117C /* GPGKeys.m */,
+				E69C1E0A217893580080117C /* GPGContext.h */,
+				E69C1E10217894AE0080117C /* GPGContext+Private.h */,
+				E69C1E0B217893580080117C /* GPGContext.m */,
 				E24508FE1A9A50EA003E602D /* GCRepository+Config.h */,
 				E24508FF1A9A50EA003E602D /* GCRepository+Config.m */,
 				E259C2DC1A64FDD00079616B /* GCRepository+HEAD-Tests.m */,
@@ -1061,6 +1099,16 @@
 			path = Interface;
 			sourceTree = "<group>";
 		};
+		E69C1E03217868160080117C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				E69C1E04217868160080117C /* libassuan.a */,
+				E69C1E06217868160080117C /* libgpg-error.a */,
+				E69C1E05217868160080117C /* libgpgme.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -1093,6 +1141,7 @@
 				E21753571B91626C00BE234A /* GCRepository+Mock.h in Headers */,
 				E21753581B91626C00BE234A /* GCRepository+Reflog.h in Headers */,
 				E21753591B91626C00BE234A /* GCRepository+Reset.h in Headers */,
+				E69C1E12217894AE0080117C /* GPGContext+Private.h in Headers */,
 				E217535A1B91626C00BE234A /* GCRepository+Status.h in Headers */,
 				E217535B1B91626C00BE234A /* GCSnapshot.h in Headers */,
 				E217535C1B91626C00BE234A /* GCSQLiteRepository.h in Headers */,
@@ -1111,6 +1160,7 @@
 				E2B9879B1B9172470097629D /* GILayer.h in Headers */,
 				E2B9879C1B9172470097629D /* GILine.h in Headers */,
 				E2B9879D1B9172470097629D /* GINode.h in Headers */,
+				E69C1E0D217893580080117C /* GPGContext.h in Headers */,
 				E21753371B91623200BE234A /* XLASLLogger.h in Headers */,
 				E21753381B91623200BE234A /* XLCallbackLogger.h in Headers */,
 				E21753391B91623200BE234A /* XLFacility.h in Headers */,
@@ -1122,6 +1172,7 @@
 				E217533F1B91623200BE234A /* XLLogRecord.h in Headers */,
 				E21753401B91623200BE234A /* XLStandardLogger.h in Headers */,
 				E21753411B91623200BE234A /* XLDatabaseLogger.h in Headers */,
+				E69C1E00217867DB0080117C /* GPGKeys.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1160,6 +1211,7 @@
 				E267E1CD1B84D80500BAB377 /* GCRepository+Mock.h in Headers */,
 				E267E1CE1B84D80500BAB377 /* GCRepository+Reflog.h in Headers */,
 				E267E1CF1B84D80500BAB377 /* GCRepository+Reset.h in Headers */,
+				E69C1E11217894AE0080117C /* GPGContext+Private.h in Headers */,
 				E267E1D01B84D80500BAB377 /* GCRepository+Status.h in Headers */,
 				E267E1F01B84D85500BAB377 /* GCHistory+Rewrite.h in Headers */,
 				E267E1F11B84D85500BAB377 /* GCRepository+Index.h in Headers */,
@@ -1184,6 +1236,7 @@
 				E267E2251B84DBE700BAB377 /* GIModalView.h in Headers */,
 				E267E2261B84DBE700BAB377 /* GIViewController.h in Headers */,
 				E267E2271B84DBE700BAB377 /* GIViewController+Utilities.h in Headers */,
+				E69C1E0C217893580080117C /* GPGContext.h in Headers */,
 				E267E2281B84DBE700BAB377 /* GIWindowController.h in Headers */,
 				E267E2361B84DC3900BAB377 /* GICommitListViewController.h in Headers */,
 				E267E2371B84DC3900BAB377 /* GIDiffContentsViewController.h in Headers */,
@@ -1196,6 +1249,7 @@
 				E267E24F1B84DC7D00BAB377 /* GICommitSplitterViewController.h in Headers */,
 				E267E2501B84DC7D00BAB377 /* GICommitViewController.h in Headers */,
 				DBDFBC0F22B61135003EEC6C /* NSBundle+GitUpKit.h in Headers */,
+				E69C1DFF217867DB0080117C /* GPGKeys.h in Headers */,
 				E267E2511B84DC7D00BAB377 /* GIConfigViewController.h in Headers */,
 				E267E2521B84DC7D00BAB377 /* GIConflictResolverViewController.h in Headers */,
 				E267E2531B84DC7D00BAB377 /* GIDiffViewController.h in Headers */,
@@ -1449,11 +1503,13 @@
 				E2B987921B9171D20097629D /* GILayer.m in Sources */,
 				E2B987931B9171D20097629D /* GILine.m in Sources */,
 				E2B987941B9171D20097629D /* GINode.m in Sources */,
+				E69C1E02217867DB0080117C /* GPGKeys.m in Sources */,
 				E2B987951B9171D20097629D /* GIPrivate.m in Sources */,
 				E21753911B91684300BE234A /* XLASLLogger.m in Sources */,
 				E21753921B91684300BE234A /* XLCallbackLogger.m in Sources */,
 				E21753931B91684300BE234A /* XLFacility.m in Sources */,
 				E21753941B91684300BE234A /* XLFileLogger.m in Sources */,
+				E69C1E0F217893580080117C /* GPGContext.m in Sources */,
 				E21753951B91684300BE234A /* XLFunctions.m in Sources */,
 				E21753961B91684300BE234A /* XLLogger.m in Sources */,
 				E21753971B91684300BE234A /* XLLogRecord.m in Sources */,
@@ -1473,6 +1529,7 @@
 				E267E1D41B84D83100BAB377 /* GCDiff.m in Sources */,
 				E267E1D51B84D83100BAB377 /* GCFoundation.m in Sources */,
 				E267E1D61B84D83100BAB377 /* GCFunctions.m in Sources */,
+				E69C1E01217867DB0080117C /* GPGKeys.m in Sources */,
 				E267E1D71B84D83100BAB377 /* GCHistory.m in Sources */,
 				E267E1D81B84D83100BAB377 /* GCIndex.m in Sources */,
 				E267E1D91B84D83100BAB377 /* GCLiveRepository.m in Sources */,
@@ -1525,6 +1582,7 @@
 				E267E2341B84DC2600BAB377 /* GISnapshotListViewController.m in Sources */,
 				E267E2351B84DC2600BAB377 /* GIUnifiedReflogViewController.m in Sources */,
 				E267E2591B84DCA100BAB377 /* GIAdvancedCommitViewController.m in Sources */,
+				E69C1E0E217893580080117C /* GPGContext.m in Sources */,
 				E267E25A1B84DCA100BAB377 /* GICommitRewriterViewController.m in Sources */,
 				E267E25B1B84DCA100BAB377 /* GICommitSplitterViewController.m in Sources */,
 				E267E25C1B84DCA100BAB377 /* GICommitViewController.m in Sources */,
@@ -1614,7 +1672,9 @@
 				E299D00F1A7206E7005035F7 /* GCSQLiteRepository-Tests.m in Sources */,
 				E2790D431ACB1B1100965A98 /* GCFoundation.m in Sources */,
 				E20EB08C19FC75CA0031A075 /* GCRepository+Reset.m in Sources */,
+				E69C1E142178AC400080117C /* GPGContext.m in Sources */,
 				E259C2D31A64F9FF0079616B /* GCHistory-Tests.m in Sources */,
+				E69C1E132178AC3E0080117C /* GPGKeys.m in Sources */,
 				E27E43061A74A96000D04ED1 /* GILayer.m in Sources */,
 				E2C338F219F85C8600063D95 /* GCRemote.m in Sources */,
 				E21739F41A4FE39E00EC6777 /* GCFunctions.m in Sources */,
@@ -1796,6 +1856,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/Third-Party/libgpgme/MacOSX/lib";
 				PRODUCT_BUNDLE_IDENTIFIER = co.gitup.kit;
 				PRODUCT_NAME = GitUpKit;
 				SDKROOT = iphoneos;
@@ -1812,6 +1873,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/Third-Party/libgpgme/MacOSX/lib";
 				PRODUCT_BUNDLE_IDENTIFIER = co.gitup.kit;
 				PRODUCT_NAME = GitUpKit;
 				SDKROOT = iphoneos;
@@ -1826,8 +1888,19 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
+				HEADER_SEARCH_PATHS = (
+					"Third-Party/libgit2/include",
+					"Third-Party/libsqlite3/$(PLATFORM_NAME)/include",
+					"Third-Party/libssh2/$(PLATFORM_NAME)/include",
+					"Third-Party/libgpgme/$(PLATFORM_NAME)/include",
+				);
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = "Third-Party/libgpgme/$(PLATFORM_NAME)/lib";
 				PRODUCT_BUNDLE_IDENTIFIER = co.gitup.kit;
 				PRODUCT_NAME = GitUpKit;
 				SDKROOT = macosx;
@@ -1842,8 +1915,19 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
+				HEADER_SEARCH_PATHS = (
+					"Third-Party/libgit2/include",
+					"Third-Party/libsqlite3/$(PLATFORM_NAME)/include",
+					"Third-Party/libssh2/$(PLATFORM_NAME)/include",
+					"Third-Party/libgpgme/$(PLATFORM_NAME)/include",
+				);
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = "Third-Party/libgpgme/$(PLATFORM_NAME)/lib";
 				PRODUCT_BUNDLE_IDENTIFIER = co.gitup.kit;
 				PRODUCT_NAME = GitUpKit;
 				SDKROOT = macosx;
@@ -1896,6 +1980,16 @@
 					"$(inherited)",
 					"__GI_HAS_APPKIT__=0",
 				);
+				HEADER_SEARCH_PATHS = (
+					"Third-Party/libgit2/include",
+					"Third-Party/libsqlite3/$(PLATFORM_NAME)/include",
+					"Third-Party/libssh2/$(PLATFORM_NAME)/include",
+					"Third-Party/libgpgme/$(PLATFORM_NAME)/include",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Third-Party/libgpgme/MacOSX/lib",
+				);
 				PRODUCT_NAME = GitUpTests;
 				SDKROOT = macosx;
 			};
@@ -1911,6 +2005,16 @@
 				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = (
 					"$(inherited)",
 					"__GI_HAS_APPKIT__=0",
+				);
+				HEADER_SEARCH_PATHS = (
+					"Third-Party/libgit2/include",
+					"Third-Party/libsqlite3/$(PLATFORM_NAME)/include",
+					"Third-Party/libssh2/$(PLATFORM_NAME)/include",
+					"Third-Party/libgpgme/$(PLATFORM_NAME)/include",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Third-Party/libgpgme/MacOSX/lib",
 				);
 				PRODUCT_NAME = GitUpTests;
 				SDKROOT = macosx;

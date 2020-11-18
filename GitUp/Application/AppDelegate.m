@@ -210,6 +210,8 @@
   // Locate installed apps.
   [GILaunchServicesLocator setup];
 
+  setenv("PATH", strcat(getenv("PATH"), ":/usr/local/MacGPG2/bin"), 1);
+  
   // Initialize user notification center
   [[NSUserNotificationCenter defaultUserNotificationCenter] setDelegate:self];
 

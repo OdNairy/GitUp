@@ -145,7 +145,7 @@ static const git_oid* _CommitParentCallback(size_t idx, void* payload) {
       CALL_LIBGIT2_FUNCTION_GOTO(cleanup, git_signature_new, &signature, "user", "user@domain.com", NSTimeIntervalSince1970 + commits.count, 0);
       git_oid oid;
       void* params[] = {cache, (__bridge void*)parents};
-      CALL_LIBGIT2_FUNCTION_GOTO(cleanup, git_commit_create_from_callback, &oid, self.private, NULL, signature, signature, NULL, message.UTF8String, &treeOID, _CommitParentCallback, params);
+      CALL_LIBGIT2_FUNCTION_GOTO(cleanup, git_commit_create_from_callback, &oid, self.private, NULL, signature, signature, NULL, message.UTF8String, NULL, &treeOID, _CommitParentCallback, params);
       git_signature_free(signature);
       signature = NULL;
       git_commit* emptyCommit;

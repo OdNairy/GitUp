@@ -18,6 +18,7 @@
 #endif
 
 #import "GCPrivate.h"
+#import "GPGKeys.h"
 
 @implementation GCRepository (Bare)
 
@@ -25,7 +26,7 @@
   GCCommit* newCommit = nil;
   git_commit* parentCommit = NULL;
   git_tree* tree = NULL;
-
+  
   if (git_commit_parentcount(squashCommit.private) != 1) {
     GC_SET_GENERIC_ERROR(@"Commit to squash must have a single parent");
     goto cleanup;
@@ -78,7 +79,9 @@ static inline GCCommit* _CopyCommit(GCRepository* repository, git_commit* commit
     commit = handler([[GCIndex alloc] initWithRepository:nil index:index], _CopyCommit(self, ourCommit), _CopyCommit(self, theirCommit), array, message, error);  // Doesn't make sense to specify a custom author on conflict anyway
     index = NULL;  // Ownership has been transferred to GCIndex instance
   } else {
-    commit = [self createCommitFromIndex:index withParents:parents count:count author:author message:message error:error];
+
+    BOOL shouldSign = YES;
+    commit = [self createCommitFromIndex:index withParents:parents count:count author:author message:message shouldSign:shouldSign error:error];
   }
 
 cleanup:
@@ -205,6 +208,7 @@ cleanup:
 - (GCCommit*)createCommitFromIndex:(GCIndex*)index
                        withParents:(NSArray*)parents
                            message:(NSString*)message
+                        shouldSign:(BOOL)shouldSign
                              error:(NSError**)error {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wvla"
@@ -214,7 +218,7 @@ cleanup:
   for (GCCommit* parent in parents) {
     commits[count++] = parent.private;
   }
-  return [self createCommitFromIndex:index.private withParents:commits count:count author:NULL message:message error:error];
+  return [self createCommitFromIndex:index.private withParents:commits count:count author:NULL message:message shouldSign:shouldSign error:error];
 }
 
 - (GCCommit*)copyCommit:(GCCommit*)copyCommit
@@ -362,20 +366,70 @@ cleanup:
                             count:(NSUInteger)count
                            author:(const git_signature*)author
                           message:(NSString*)message
+                       shouldSign:(BOOL)shouldSign
                             error:(NSError**)error {
   GCCommit* commit = nil;
   git_signature* signature = NULL;
 
   git_oid oid;
+  
+  GCConfigOption* shouldSignOption = [self readConfigOptionForVariable:@"commit.gpgsign" error:nil];
   CALL_LIBGIT2_FUNCTION_GOTO(cleanup, git_signature_default, &signature, self.private);
-  CALL_LIBGIT2_FUNCTION_GOTO(cleanup, git_commit_create, &oid, self.private, NULL, author ? author : signature, signature, NULL, GCCleanedUpCommitMessage(message).bytes, tree, count, parents);
+  
+  git_buf commitBuffer = GIT_BUF_INIT_CONST("", 0);
+  const char *gpgSignature = NULL;
+  if ([shouldSignOption.value isEqualToString:@"true"]) {
+    GCConfigOption* signingKeyOption = [self readConfigOptionForVariable:@"user.signingkey" error:nil];
+    
+    /*
+     Almost the best case: We can prototype buffer content, calculate gpg signature and call original `git_commit_create_with_signature`.
+     We have to create buffer first because we cannot trigger gpg calculation from the libgit2.
+     
+     Alternatively, it's still possible to reuse commit buffer if we will implement custom method to support rest implementation of 'git_commit_create_with_signature'
+     */
+    
+    CALL_LIBGIT2_FUNCTION_GOTO(cleanupBuffer, git_commit_create_buffer, &commitBuffer, self.private, author ? author : signature, signature, NULL, GCCleanedUpCommitMessage(message).bytes, NULL, tree, count, parents);
+    gpgSignature = [self gpgSig:commitBuffer.ptr keyId:signingKeyOption.value];
+  }
+  
+  if (gpgSignature != NULL) {
+    CALL_LIBGIT2_FUNCTION_GOTO(cleanupBuffer, git_commit_create_with_signature, &oid, self.private, commitBuffer.ptr, gpgSignature, NULL);
+    
+    git_commit* signed_commit = nil;
+    git_commit_lookup(&signed_commit, self.private, &oid);
+    printf("!");
+  } else {
+    CALL_LIBGIT2_FUNCTION_GOTO(cleanupBuffer, git_commit_create, &oid, self.private, NULL, author ? author : signature, signature, NULL, GCCleanedUpCommitMessage(message).bytes, NULL, tree, count, parents);
+  }
+  
   git_commit* newCommit = NULL;
   CALL_LIBGIT2_FUNCTION_GOTO(cleanup, git_commit_lookup, &newCommit, self.private, &oid);
   commit = [[GCCommit alloc] initWithRepository:self commit:newCommit];
 
+cleanupBuffer:
+  git_buf_free(&commitBuffer);
+  
 cleanup:
   git_signature_free(signature);
   return commit;
+}
+
+-(const char*)gpgSig:(const char*)body keyId:(NSString*)keyId {
+  GPGKey *key = nil;
+  if (keyId.length > 0) {
+    key = [GPGKey secretKeyForId:keyId];
+  }
+  if (key == nil) {
+    key = [[GPGKey allSecretKeys] firstObject];
+  }
+  if (key == nil) {
+    return NULL;
+  }
+
+  NSString* plainToSign = [[NSString alloc] initWithCString:body encoding:NSUTF8StringEncoding];
+  NSString* signature = [key signSignature:plainToSign];
+  
+  return [signature UTF8String];
 }
 
 - (GCCommit*)createCommitFromIndex:(git_index*)index
@@ -383,6 +437,7 @@ cleanup:
                              count:(NSUInteger)count
                             author:(const git_signature*)author
                            message:(NSString*)message
+                        shouldSign:(BOOL)shouldSign
                              error:(NSError**)error {
   GCCommit* commit = nil;
   git_tree* tree = NULL;
@@ -391,7 +446,7 @@ cleanup:
   CALL_LIBGIT2_FUNCTION_GOTO(cleanup, git_index_write_tree_to, &oid, index, self.private);
   CALL_LIBGIT2_FUNCTION_GOTO(cleanup, git_tree_lookup, &tree, self.private, &oid);
 
-  commit = [self createCommitFromTree:tree withParents:parents count:count author:author message:message error:error];
+  commit = [self createCommitFromTree:tree withParents:parents count:count author:author message:message shouldSign:shouldSign error:error];
 
 cleanup:
   git_tree_free(tree);
@@ -412,6 +467,14 @@ static const git_oid* _CommitParentCallback_Commit(size_t idx, void* payload) {
     return git_commit_parent_id(commit, (unsigned int)idx);
   }
   return NULL;
+}
+
+static int (_SignCommitCallback)(git_buf *signature, git_buf *signature_field, const char *commit_content, void *payload) {
+  // Cannot implement such signing callback
+  // Reason: We need access to self for gpg signing method, key, configs and repo information.
+  
+  
+  return GIT_OK;
 }
 
 - (GCCommit*)createCommitFromCommit:(git_commit*)commit
@@ -439,14 +502,38 @@ static const git_oid* _CommitParentCallback_Commit(size_t idx, void* payload) {
   git_signature* signature = NULL;
   git_oid oid;
 
+  GCConfigOption* shouldSignOption = [self readConfigOptionForVariable:@"commit.gpgsign" error:nil];
+  
   if (updateCommitter) {
     CALL_LIBGIT2_FUNCTION_GOTO(cleanup, git_signature_default, &signature, self.private);
   }
 
+  git_buf commitBuffer = GIT_BUF_INIT_CONST("", 0);
+  CALL_LIBGIT2_FUNCTION_GOTO(cleanup, git_commit_create_buffer_for_signature, &commitBuffer, &oid, self.private, NULL,
+                             git_commit_author(commit),
+                             updateCommitter ? signature : git_commit_committer(commit),
+                             message ? NULL : git_commit_message_encoding(commit),
+                             message ? GCCleanedUpCommitMessage(message).bytes : git_commit_message(commit),
+                             git_tree_id(tree),
+                             parents ? _CommitParentCallback_Parents : _CommitParentCallback_Commit, parents ? (__bridge void*)parents : (void*)commit,
+                             true);
+  
+  const char *gpgSignature = NULL;
+  if ([shouldSignOption.value isEqualToString:@"true"]) {
+    GCConfigOption* signingKeyOption = [self readConfigOptionForVariable:@"user.signingkey" error:nil];
+    
+    gpgSignature = [self gpgSig:commitBuffer.ptr keyId:signingKeyOption.value];
+  }
+  
+  printf("signature?");
+  
+  
   CALL_LIBGIT2_FUNCTION_GOTO(cleanup, git_commit_create_from_callback, &oid, self.private, NULL,
                              git_commit_author(commit),
                              updateCommitter ? signature : git_commit_committer(commit),
-                             message ? NULL : git_commit_message_encoding(commit), message ? GCCleanedUpCommitMessage(message).bytes : git_commit_message(commit),
+                             message ? NULL : git_commit_message_encoding(commit),
+                             message ? GCCleanedUpCommitMessage(message).bytes : git_commit_message(commit),
+                             gpgSignature,
                              git_tree_id(tree),
                              parents ? _CommitParentCallback_Parents : _CommitParentCallback_Commit, parents ? (__bridge void*)parents : (void*)commit);
   CALL_LIBGIT2_FUNCTION_GOTO(cleanup, git_commit_lookup, &newCommit, self.private, &oid);
@@ -458,3 +545,5 @@ cleanup:
 }
 
 @end
+
+
